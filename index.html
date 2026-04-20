@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VVITU Bus Management Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --orange: #FF6B00;
+    --orange-light: #FF8C33;
+    --orange-glow: rgba(255,107,0,0.18);
+    --yellow: #FFD700;
+    --blue-dark: #0A1628;
+    --blue-mid: #0D2040;
+    --blue-card: #0F2545;
+    --blue-border: rgba(255,107,0,0.25);
+    --white: #FFFFFF;
+    --text-muted: rgba(255,255,255,0.6);
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--blue-dark);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Animated background ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 15% 20%, rgba(255,107,0,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 85% 75%, rgba(255,107,0,0.10) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 60% at 50% 50%, rgba(13,32,64,0.8) 0%, transparent 80%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ── Moving road lines ── */
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 4px;
+    background: repeating-linear-gradient(90deg, var(--orange) 0, var(--orange) 60px, transparent 60px, transparent 100px);
+    opacity: 0.5;
+    z-index: 0;
+    animation: roadMove 2s linear infinite;
+  }
+  @keyframes roadMove { from { background-position: 0 0; } to { background-position: 100px 0; } }
+
+  /* ── Header ── */
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 48px;
+    border-bottom: 1px solid var(--blue-border);
+    background: rgba(10,22,40,0.85);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, var(--orange), var(--yellow));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 0 18px rgba(255,107,0,0.45);
+  }
+
+  .logo-text {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1.1;
+  }
+
+  .logo-text span { color: var(--orange); }
+  .logo-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+
+  nav { display: flex; gap: 10px; }
+  nav a {
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover { color: var(--white); background: var(--orange-glow); border-color: var(--blue-border); }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative; z-index: 5;
+    text-align: center;
+    padding: 80px 24px 60px;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--orange-glow);
+    border: 1px solid var(--orange);
+    border-radius: 999px;
+    padding: 6px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--orange-light);
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--orange);
+    animation: pulse 1.5s ease infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+
+  .hero h1 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(42px, 7vw, 80px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -1px;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+
+  .hero h1 .vvitu {
+    background: linear-gradient(90deg, var(--orange), var(--yellow), var(--orange-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(255,107,0,0.5));
+  }
+
+  .hero h1 .rest { color: var(--white); }
+
+  .hero p {
+    margin: 20px auto 0;
+    max-width: 480px;
+    font-size: 17px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    animation: fadeDown 0.6s 0.2s ease both;
+  }
+
+  @keyframes fadeDown { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ── Stats bar ── */
+  .stats-bar {
+    position: relative; z-index: 5;
+    display: flex; justify-content: center; gap: 0;
+    margin: 0 auto 56px;
+    max-width: 640px;
+    background: var(--blue-card);
+    border: 1px solid var(--blue-border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeDown 0.6s 0.3s ease both;
+  }
+
+  .stat-item {
+    flex: 1; text-align: center;
+    padding: 18px 12px;
+    border-right: 1px solid var(--blue-border);
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 28px; font-weight: 700;
+    color: var(--orange);
+  }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── Login Cards ── */
+  .cards-section {
+    position: relative; z-index: 5;
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    padding: 0 24px 80px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.7s 0.35s ease both;
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+  .login-card {
+    background: var(--blue-card);
+    border: 1px solid var(--blue-border);
+    border-radius: 24px;
+    padding: 40px 36px 36px;
+    width: 300px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+    cursor: pointer;
+  }
+
+  .login-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255,107,0,0.10), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .login-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--orange);
+    box-shadow: 0 20px 50px rgba(255,107,0,0.2);
+  }
+  .login-card:hover::before { opacity: 1; }
+
+  .card-icon {
+    width: 76px; height: 76px;
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 38px;
+    margin: 0 auto 22px;
+    position: relative;
+  }
+
+  .card-icon.student {
+    background: linear-gradient(135deg, rgba(255,107,0,0.2), rgba(255,215,0,0.15));
+    border: 1.5px solid rgba(255,107,0,0.4);
+    box-shadow: 0 0 24px rgba(255,107,0,0.2);
+  }
+
+  .card-icon.staff {
+    background: linear-gradient(135deg, rgba(0,140,255,0.2), rgba(0,200,255,0.12));
+    border: 1.5px solid rgba(0,180,255,0.35);
+    box-shadow: 0 0 24px rgba(0,140,255,0.2);
+  }
+
+  .login-card h2 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px; font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+
+  .login-card.student-card h2 { color: var(--orange-light); }
+  .login-card.staff-card h2 { color: #4FC3F7; }
+
+  .login-card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 30px;
+  }
+
+  .features-list {
+    list-style: none;
+    margin-bottom: 30px;
+    text-align: left;
+  }
+  .features-list li {
+    font-size: 13px;
+    color: rgba(255,255,255,0.75);
+    padding: 5px 0;
+    padding-left: 22px;
+    position: relative;
+  }
+  .features-list li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    font-size: 11px;
+  }
+  .student-card .features-list li::before { color: var(--orange); }
+  .staff-card .features-list li::before { color: #4FC3F7; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 12px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+  }
+
+  .btn-student {
+    background: linear-gradient(135deg, var(--orange), var(--orange-light));
+    color: white;
+    box-shadow: 0 6px 20px rgba(255,107,0,0.35);
+  }
+  .btn-student:hover { transform: scale(1.03); box-shadow: 0 8px 28px rgba(255,107,0,0.5); }
+
+  .btn-staff {
+    background: linear-gradient(135deg, #0288D1, #4FC3F7);
+    color: white;
+    box-shadow: 0 6px 20px rgba(2,136,209,0.3);
+  }
+  .btn-staff:hover { transform: scale(1.03); box-shadow: 0 8px 28px rgba(2,136,209,0.45); }
+
+  /* ── Logged-in welcome banner (shown when logged in) ── */
+  .welcome-banner {
+    position: relative; z-index: 5;
+    max-width: 700px;
+    margin: 0 auto 40px;
+    background: var(--blue-card);
+    border: 1px solid var(--orange);
+    border-radius: 20px;
+    padding: 28px 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 0 40px rgba(255,107,0,0.12);
+    animation: fadeDown 0.5s ease both;
+  }
+
+  .welcome-info h3 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 24px;
+    color: var(--orange-light);
+    margin-bottom: 6px;
+  }
+
+  .welcome-info .meta {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex; gap: 16px; flex-wrap: wrap;
+  }
+
+  .meta-item { display: flex; align-items: center; gap: 5px; }
+  .meta-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
+
+  .btn-dashboard {
+    white-space: nowrap;
+    padding: 12px 24px;
+    width: auto;
+    border-radius: 10px;
+  }
+
+  /* ── Footer ── */
+  footer {
+    position: relative; z-index: 5;
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid var(--blue-border);
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  footer strong { color: var(--orange); }
+
+  /* ── Bus decorative strip ── */
+  .bus-strip {
+    position: relative; z-index: 5;
+    overflow: hidden;
+    height: 50px;
+    margin-bottom: 20px;
+    opacity: 0.35;
+  }
+  .bus-strip-inner {
+    display: flex;
+    gap: 80px;
+    animation: busMove 18s linear infinite;
+    white-space: nowrap;
+    font-size: 28px;
+    line-height: 50px;
+    width: max-content;
+  }
+  @keyframes busMove { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo-area">
+    <div class="logo-icon">🚌</div>
+    <div>
+      <div class="logo-text"><span>VVITU</span> BUS</div>
+      <div class="logo-sub">Management Portal</div>
+    </div>
+  </div>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#">Bus Routes</a>
+    <a href="#">Track Bus</a>
+    <a href="#">Contact</a>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">🟠 Live Tracking Enabled</div>
+  <h1>
+    <span class="vvitu">VVITU</span><br>
+    <span class="rest">Bus Management Portal</span>
+  </h1>
+  <p>Your smart gateway to bus schedules, live tracking, fee details, and route information — all in one place.</p>
+</section>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-num">20+</div>
+    <div class="stat-label">Buses Running</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">1500+</div>
+    <div class="stat-label">Students</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">15+</div>
+    <div class="stat-label">Routes</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">Live</div>
+    <div class="stat-label">GPS Tracking</div>
+  </div>
+</div>
+
+<!-- Bus decoration strip -->
+<div class="bus-strip">
+  <div class="bus-strip-inner">
+    🚌&nbsp;Route A &nbsp;·&nbsp; 🚌&nbsp;Route B &nbsp;·&nbsp; 🚌&nbsp;Route C &nbsp;·&nbsp; 🚌&nbsp;Route D &nbsp;·&nbsp; 🚌&nbsp;Route E &nbsp;·&nbsp;
+    🚌&nbsp;Route A &nbsp;·&nbsp; 🚌&nbsp;Route B &nbsp;·&nbsp; 🚌&nbsp;Route C &nbsp;·&nbsp; 🚌&nbsp;Route D &nbsp;·&nbsp; 🚌&nbsp;Route E &nbsp;·&nbsp;
+  </div>
+</div>
+
+<!-- Login Cards -->
+<section class="cards-section">
+
+  <!-- Student Card -->
+  <div class="login-card student-card" onclick="window.location='/student/login'">
+    <div class="card-icon student">🎓</div>
+    <h2>Student Login</h2>
+    <p>Access your bus details, live tracker, fee records, and route info using your roll number.</p>
+    <ul class="features-list">
+      <li>View your bus route & timing</li>
+      <li>Live GPS bus tracking</li>
+      <li>Fee payment details</li>
+      <li>Boarding point info</li>
+    </ul>
+    <a href="/student/login" class="btn btn-student">Login as Student →</a>
+  </div>
+
+  <!-- Staff Card -->
+  <div class="login-card staff-card" onclick="window.location='/staff/login'">
+    <div class="card-icon staff">👨‍💼</div>
+    <h2>Staff Login</h2>
+    <p>Existing staff log in securely. New staff can register with a username and password.</p>
+    <ul class="features-list">
+      <li>Manage all bus routes</li>
+      <li>Student fee management</li>
+      <li>Driver & bus assignment</li>
+      <li>Admin dashboard access</li>
+    </ul>
+    <a href="/staff/login" class="btn btn-staff">Login as Staff →</a>
+  </div>
+
+</section>
+
+<!-- Footer -->
+<footer>
+  <p>© 2025 <strong>VVITU Bus Management Portal</strong> &nbsp;·&nbsp; Vasireddy Venkatadri Institute of Technology</p>
+</footer>
+
+</body>
+</html>
